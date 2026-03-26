@@ -107,7 +107,7 @@ def get_next_run_specification(sf_session):
 
 def main():
     """Main function to run the program."""
-    base_location = 'data-files'
+    base_location = os.path.abspath('data-files')
     # Input from the user
     sf_session = snowpark_basic_auth()
     next_run_day,next_run_hour,next_run_counter = get_next_run_specification(sf_session)
