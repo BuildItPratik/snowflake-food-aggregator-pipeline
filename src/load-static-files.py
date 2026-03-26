@@ -72,8 +72,8 @@ def main():
         sf_session.sql(f"""
         INSERT INTO common.control_tbl 
         (run_counter, processing_day, processing_hour, status)
-        VALUES ({next_run_counter}, '{next_run_day}', {next_run_hour}, 'STARTED')
-        """).collect()
+        VALUES (?, ?, ?, 'STARTED')
+        """, next_run_counter, next_run_day, next_run_hour).collect()
 
         # File paths
         order_file = f'{base_location}/{next_run_day}/{next_run_hour_text}/orders.csv'
@@ -92,37 +92,34 @@ def main():
         logging.info("Files uploaded successfully")
 
         # Build status msg
-        status_msg = f"""
-        Orders: {o_res[0][1]},
-        OrderItems: {oi_res[0][1]},
-        Delivery: {d_res[0][1]}
-        """
+        status_msg = f"""Orders: {o_res[0][1]}, OrderItems: {oi_res[0][1]}, Delivery: {d_res[0][1]}"""
 
-        # UPDATE SUCCESS
-        sf_session.sql(f"""
+        # UPDATE SUCCESS (using parameterized query)
+        sf_session.sql("""
         UPDATE common.control_tbl 
         SET status = 'COMPLETED',
             updated_ts = current_timestamp(),
-            status_msg = '{status_msg}'
-        WHERE run_counter = {next_run_counter}
-          AND processing_day = '{next_run_day}'
-          AND processing_hour = {next_run_hour}
+            status_msg = ?
+        WHERE run_counter = ?
+          AND processing_day = ?
+          AND processing_hour = ?
           AND status = 'STARTED'
-        """).collect()
+        """, status_msg, next_run_counter, next_run_day, next_run_hour).collect()
 
     except Exception as e:
-        logging.error(f"Error: {str(e)}")
+        error_msg = str(e)
+        logging.error(f"Error: {error_msg}")
 
-        # UPDATE FAILURE
-        sf_session.sql(f"""
+        # UPDATE FAILURE (using parameterized query)
+        sf_session.sql("""
         UPDATE common.control_tbl 
         SET status = 'FAILED',
             updated_ts = current_timestamp(),
-            error_msg = '{str(e)}'
-        WHERE run_counter = {next_run_counter}
-          AND processing_day = '{next_run_day}'
-          AND processing_hour = {next_run_hour}
-        """).collect()
+            error_msg = ?
+        WHERE run_counter = ?
+          AND processing_day = ?
+          AND processing_hour = ?
+        """, error_msg, next_run_counter, next_run_day, next_run_hour).collect()
 
         raise e
 
