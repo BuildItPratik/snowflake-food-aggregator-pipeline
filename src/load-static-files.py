@@ -77,7 +77,7 @@ def main():
 
         # File paths
         order_file = f'{base_location}/{next_run_day}/{next_run_hour_text}/orders.csv'
-        order_item_file = f'{base_location}/{next_run_day}/{next_run_hour_text}/order-item.csv'
+        order_item_file = f'{base_location}/{next_run_day}/{next_run_hour_text}/order-items.csv'
         delivery_file = f'{base_location}/{next_run_day}/{next_run_hour_text}/delivery.csv'
 
         order_stage = f'@bigdata_db.stage_sch.csv_stg/orders/{next_run_day}/{next_run_hour_text}'
