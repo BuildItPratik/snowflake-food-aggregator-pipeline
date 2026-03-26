@@ -1,0 +1,40 @@
+name: Two-Days-48Hrs-File-Upload
+
+on:
+  schedule:
+    - cron: '45 * * * *'   # runs at 45th minute every hour
+  workflow_dispatch:
+
+jobs:
+  pushOrderData:
+    runs-on: ubuntu-latest
+
+    # 🔐 Global environment variables from GitHub Secrets
+    env:
+      ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
+      USER: ${{ secrets.SNOWFLAKE_USER }}
+      PASSWORD: ${{ secrets.SNOWFLAKE_PASSWORD }}
+      ROLE: ${{ secrets.SNOWFLAKE_ROLE }}
+      DATABASE: ${{ secrets.SNOWFLAKE_DATABASE }}
+      SCHEMA: ${{ secrets.SNOWFLAKE_SCHEMA }}
+      WAREHOUSE: ${{ secrets.SNOWFLAKE_WAREHOUSE }}
+
+    steps:
+      - name: 1/4 Checkout code
+        uses: actions/checkout@v3
+
+      - name: 2/4 Set up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: '3.9'
+
+      - name: 3/4 Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install "snowflake-snowpark-python[pandas]"
+
+      - name: 4/4 Push CSV To Stage
+        run: |
+          echo "------------------ START ------------------"
+          python src/load-static-files.py
+          echo "------------------- END -------------------"
