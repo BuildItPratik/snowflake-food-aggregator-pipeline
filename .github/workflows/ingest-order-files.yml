@@ -36,5 +36,5 @@ jobs:
       - name: 4/4 Push CSV To Stage
         run: |
           echo "------------------ START ------------------"
-          python src/load-files.py
+          python 08-Automate-Data-Ingestion\src\load-files.py
           echo "------------------- END -------------------"
